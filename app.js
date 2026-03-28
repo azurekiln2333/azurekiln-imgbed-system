@@ -41,7 +41,7 @@ let db;
 
 (async () => {
     db = await mysql.createPool(CONFIG.db);
-    console.log('✅ 数据库连接成功');
+    console.log('数据库连接成功');
 
     const auth = authMiddleware(CONFIG);
 
@@ -55,7 +55,7 @@ let db;
     app.use('/api', createUserRouter(db, auth));
 
     app.listen(CONFIG.port, () => {
-        console.log(`🚀 图床服务已启动: http://localhost:${CONFIG.port}`);
+        console.log(`图床服务已启动: http://localhost:${CONFIG.port}`);
         if (!fs.existsSync('uploads')) fs.mkdirSync('uploads');
     });
 })();
