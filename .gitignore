@@ -1,0 +1,11 @@
+# 环境变量（敏感信息，切勿提交）
+.env
+
+# 依赖
+node_modules/
+
+# 临时上传目录
+uploads/
+
+
+package-lock.json
