@@ -108,19 +108,19 @@ onMounted(loadTokens)
 
 <template>
   <section>
-    <div class="mb-8">
+    <div class="mb-6">
       <h2 class="text-2xl font-bold text-on-surface">令牌管理</h2>
-      <p class="mt-2 text-sm text-on-surface-variant max-w-2xl">为脚本或第三方工具创建 API 令牌，使用 <code class="px-1.5 py-0.5 rounded bg-surface-container-high text-xs">Authorization: Bearer &lt;token&gt;</code> 调用上传接口。令牌明文仅在创建时显示一次。</p>
+      <p class="mt-2 text-sm text-on-surface-variant max-w-2xl">为脚本或第三方工具创建 API 令牌，上传接口使用 <code class="px-1.5 py-0.5 rounded bg-surface-container-high text-xs">Authorization: Bearer &lt;token&gt;</code> 调用。令牌明文仅在创建时显示一次。</p>
     </div>
 
     <p v-if="error" role="alert" class="mb-5 p-3 bg-error/10 text-error rounded-lg text-sm">{{ error }}</p>
     <p v-if="notice" role="status" class="mb-5 p-3 bg-primary/10 text-primary rounded-lg text-sm">{{ notice }}</p>
 
-    <div class="bg-white rounded-lg p-5 sm:p-6 mb-6">
+    <div class="bg-white border border-outline-variant/40 rounded-lg p-4 sm:p-5 mb-4">
       <form class="flex flex-col sm:flex-row gap-3" @submit.prevent="createToken">
         <label class="sr-only" for="token-name">令牌名称</label>
-        <input id="token-name" v-model="name" maxlength="50" placeholder="令牌名称，例如 CI 上传" class="flex-1 bg-surface-container-high border-none rounded-lg px-4 py-3 text-sm" />
-        <button type="submit" :disabled="busy" class="px-6 py-3 rounded-lg primary-gradient text-white font-bold text-sm disabled:opacity-50">创建令牌</button>
+        <input id="token-name" v-model="name" maxlength="50" placeholder="令牌名称，例如 CI 上传" class="flex-1 bg-surface-container-high border-none rounded-lg px-4 py-2.5 text-sm" />
+        <button type="submit" :disabled="busy" class="px-6 py-2.5 rounded-lg primary-gradient text-white font-bold text-sm disabled:opacity-50">创建令牌</button>
       </form>
 
       <div v-if="createdToken" class="mt-5 rounded-lg border border-primary/30 bg-primary/5 p-4">
@@ -132,9 +132,9 @@ onMounted(loadTokens)
       </div>
     </div>
 
-    <div class="bg-white rounded-lg overflow-hidden">
-      <div class="px-5 sm:px-6 py-4 border-b border-outline-variant/20 flex items-center justify-between">
-        <h3 class="text-sm font-bold text-on-surface-variant uppercase tracking-widest">我的令牌</h3>
+    <div class="bg-white border border-outline-variant/40 rounded-lg overflow-hidden">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+        <span class="text-xs font-bold text-on-surface-variant uppercase tracking-widest">已创建的令牌</span>
         <span class="text-xs text-on-surface-variant">{{ tokens.length }} 个</span>
       </div>
 
@@ -146,7 +146,7 @@ onMounted(loadTokens)
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2">
               <span class="font-bold truncate">{{ token.name }}</span>
-              <span class="text-[11px] px-2 py-0.5 rounded-full shrink-0" :class="Number(token.status) === 1 ? 'bg-primary/10 text-primary' : 'bg-surface-container-high text-on-surface-variant'">{{ Number(token.status) === 1 ? '启用' : '停用' }}</span>
+              <span class="text-[11px] px-2 py-0.5 rounded shrink-0" :class="Number(token.status) === 1 ? 'bg-primary/10 text-primary' : 'bg-surface-container-high text-on-surface-variant'">{{ Number(token.status) === 1 ? '启用' : '停用' }}</span>
             </div>
             <p class="mt-1 text-xs text-on-surface-variant font-mono truncate">{{ token.token_prefix }}••••••••</p>
             <p class="mt-1 text-xs text-on-surface-variant">创建于 {{ formatDate(token.created_at) }} · 最近使用 {{ formatDate(token.last_used_at) }}</p>
