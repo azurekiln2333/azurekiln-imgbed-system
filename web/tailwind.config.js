@@ -20,7 +20,18 @@ export default {
         body: ['Inter', 'sans-serif'],
         label: ['Inter', 'sans-serif']
       },
-      borderRadius: { DEFAULT: '0.25rem', lg: '0.5rem', xl: '0.75rem' }
+      // New API / MD3 style radius: nothing on cards, panels, inputs or
+      // buttons exceeds `--radius: 0.5rem`. Large Tailwind steps are clamped
+      // here so no `rounded-xl`/`rounded-2xl` is reintroduced by accident.
+      borderRadius: {
+        sm: '0.25rem',
+        DEFAULT: '0.375rem',
+        md: '0.375rem',
+        lg: '0.5rem',
+        xl: '0.5rem',
+        '2xl': '0.5rem',
+        '3xl': '0.5rem'
+      }
     }
   },
   plugins: [forms]
