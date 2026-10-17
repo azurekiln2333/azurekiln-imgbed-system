@@ -22,7 +22,7 @@ const emit = defineEmits(['select', 'close'])
 
 <template>
   <aside
-    class="fixed inset-y-0 left-0 z-50 flex flex-col border-r border-outline-variant/40 bg-surface-container-low transition-[transform,width] duration-300 ease-out dark:bg-slate-900 lg:translate-x-0"
+    class="fixed inset-y-0 left-0 z-20 flex flex-col border-r border-outline-variant/40 bg-surface-container-low transition-[transform,width] duration-300 ease-out dark:bg-slate-900 lg:z-40 lg:translate-x-0"
     :class="[mobileOpen ? 'translate-x-0' : '-translate-x-full', collapsed ? 'w-16' : 'w-64']"
     aria-label="主导航"
   >

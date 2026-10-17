@@ -68,13 +68,14 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
 
 <template>
   <div class="min-h-screen bg-surface">
-    <div v-if="mobileOpen" class="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden" @click="mobileOpen = false"></div>
+    <div v-if="mobileOpen" class="fixed inset-0 z-10 bg-black/50 backdrop-blur-sm lg:hidden" @click="mobileOpen = false"></div>
 
     <AppSidebar :active="view" :collapsed="collapsed" :mobile-open="mobileOpen" @select="selectView" @close="mobileOpen = false" />
 
     <div class="min-w-0 transition-[padding] duration-300 ease-out" :class="contentOffset">
       <AppHeader
         :collapsed="collapsed"
+        :mobile-open="mobileOpen"
         :user="user"
         :search="search"
         @toggle-sidebar="toggleSidebar"
