@@ -111,23 +111,26 @@ onUnmounted(() => { document.removeEventListener('keydown', onKeydown); document
 </script>
 
 <template>
-  <section>
-    <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-12 gap-6">
-      <div><span class="text-primary font-bold text-xs uppercase tracking-[0.2em] mb-2 block">资产仓库</span><h2 class="text-2xl sm:text-4xl font-extrabold text-on-surface">图床画廊</h2></div>
-      <button class="flex items-center gap-2 bg-surface-container-low px-4 py-2.5 rounded-lg text-xs font-bold hover:bg-surface-container-high self-start" @click="load(page)"><span class="material-symbols-outlined text-sm">refresh</span> 刷新</button>
+  <section class="space-y-4">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <h2 class="text-2xl font-bold text-on-surface">图床画廊</h2>
+      <div class="flex items-center gap-3">
+        <span class="text-xs text-on-surface-variant">{{ stats.total_images || 0 }} 张 · {{ (Number(stats.total_size || 0) / 1024 / 1024).toFixed(2) }} MB</span>
+        <button class="flex items-center gap-1.5 bg-surface-container-low px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-surface-container-high" @click="load(page)"><span class="material-symbols-outlined text-sm">refresh</span> 刷新</button>
+      </div>
     </div>
-    <p v-if="error" role="alert" class="mb-5 p-3 bg-error/10 text-error rounded-lg text-sm">{{ error }}</p>
+    <p v-if="error" role="alert" class="p-3 bg-error/10 text-error rounded-lg text-sm">{{ error }}</p>
     <p v-if="loading" class="text-sm text-on-surface-variant">加载中...</p>
-    <div v-else-if="images.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-8">
-      <article v-for="image in images" :key="image.id" class="group relative bg-surface-container-low rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+    <div v-else-if="images.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <article v-for="image in images" :key="image.id" class="group bg-surface-container-lowest border border-outline-variant/40 rounded-lg overflow-hidden transition-shadow hover:shadow-md">
         <button class="aspect-[4/3] w-full overflow-hidden relative block text-left" :aria-label="`查看 ${image.original_name || image.image_key}`" @click="openModal(image)">
           <img :src="imageUrl(image.image_key)" :alt="image.original_name || image.image_key" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-          <span class="absolute bottom-3 right-3 px-2 py-1 bg-black/40 backdrop-blur rounded text-[10px] text-white font-mono uppercase">{{ image.mime_type?.split('/').pop() || 'IMG' }}</span>
+          <span class="absolute bottom-2 right-2 px-1.5 py-0.5 bg-black/40 backdrop-blur rounded text-[10px] text-white font-mono uppercase">{{ image.mime_type?.split('/').pop() || 'IMG' }}</span>
         </button>
-        <div class="p-4">
-          <h3 class="font-bold text-on-surface truncate text-sm mb-1" :title="image.original_name">{{ image.original_name || image.image_key }}</h3>
-          <p class="text-xs text-on-surface-variant truncate mb-3" :title="image.description || '暂无描述'">{{ image.description || '暂无描述' }}</p>
-          <div class="flex items-center gap-2">
+        <div class="p-3">
+          <h3 class="font-bold text-on-surface truncate text-sm" :title="image.original_name">{{ image.original_name || image.image_key }}</h3>
+          <p class="text-xs text-on-surface-variant truncate mb-2.5" :title="image.description || '暂无描述'">{{ image.description || '暂无描述' }}</p>
+          <div class="flex items-center gap-1.5">
             <button class="flex-1 min-w-0 flex items-center justify-center gap-1 px-1 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg text-[10px] font-bold whitespace-nowrap" @click="copy(imageUrl(image.image_key))"><span class="material-symbols-outlined text-xs">link</span> 复制链接</button>
             <button class="flex-1 min-w-0 flex items-center justify-center gap-1 px-1 py-1.5 bg-surface-container-high text-on-surface-variant rounded-lg text-[10px] font-bold whitespace-nowrap" @click="copy(`![${image.original_name}](${imageUrl(image.image_key)})`)"><span class="material-symbols-outlined text-xs">code</span> MD</button>
             <button class="p-1.5 hover:bg-error/10 text-error rounded-lg" title="删除图片" @click="remove(image)"><span class="material-symbols-outlined text-sm">delete</span></button>
@@ -135,27 +138,75 @@ onUnmounted(() => { document.removeEventListener('keydown', onKeydown); document
         </div>
       </article>
     </div>
-    <p v-else class="text-center py-16 text-on-surface-variant">{{ query ? '没有找到匹配的图片' : '暂无图片' }}</p>
-    <div class="mt-20 flex flex-col md:flex-row items-center justify-between border-t border-outline-variant/20 pt-10">
-      <div class="flex items-center gap-8 mb-6 md:mb-0"><div class="flex flex-col"><span class="text-[10px] font-bold text-outline uppercase tracking-widest">体积统计</span><span class="text-lg font-extrabold mt-1">{{ (Number(stats.total_size || 0) / 1024 / 1024).toFixed(2) }} MB</span></div><div class="flex flex-col"><span class="text-[10px] font-bold text-outline uppercase tracking-widest">活跃资产</span><span class="text-lg font-extrabold mt-1">{{ stats.total_images || 0 }}</span></div></div>
-      <nav class="flex flex-wrap items-center gap-2" aria-label="图库分页"><button v-for="number in pagination" :key="number" class="px-3 h-8 rounded-lg text-xs font-bold" :class="number === page ? 'bg-primary-container text-white' : 'hover:bg-surface-container-low'" @click="load(number)">{{ number }}</button></nav>
-    </div>
+    <p v-else class="text-center py-12 text-on-surface-variant text-sm">{{ query ? '没有找到匹配的图片' : '暂无图片' }}</p>
+
+    <nav v-if="pages > 1" class="flex flex-wrap items-center justify-center gap-2 pt-2" aria-label="图库分页">
+      <button v-for="number in pagination" :key="number" class="px-3 h-8 rounded-lg text-xs font-bold" :class="number === page ? 'bg-primary text-white' : 'bg-surface-container-low hover:bg-surface-container-high'" @click="load(number)">{{ number }}</button>
+    </nav>
 
     <div v-if="selected" class="fixed inset-0 z-[100]" role="dialog" aria-modal="true" :aria-label="selected.original_name || '图片详情'">
       <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="closeModal"></div>
-      <div class="absolute inset-2 lg:inset-10 bg-surface rounded-xl shadow-2xl overflow-hidden flex flex-col lg:flex-row">
-        <div class="h-[35vh] min-h-[200px] lg:h-auto lg:flex-1 lg:min-h-0 bg-surface-container-low flex items-center justify-center p-2 lg:p-8 relative group">
+      <div class="absolute inset-2 lg:inset-10 bg-surface rounded-lg shadow-2xl overflow-hidden flex flex-col lg:flex-row">
+        <div class="h-[35vh] min-h-[200px] lg:h-auto lg:flex-1 lg:min-h-0 bg-surface-container-low flex items-center justify-center p-2 lg:p-6 relative group">
           <img :src="imageUrl(selected.image_key)" :alt="selected.original_name" class="max-w-full max-h-full object-contain rounded-lg" />
-          <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity"><div class="bg-glass px-4 py-2 rounded-full flex gap-4 items-center shadow-lg"><button class="hover:text-primary flex items-center gap-1 text-xs font-bold uppercase" @click="download"><span class="material-symbols-outlined text-lg">download</span> 下载</button><span class="w-px h-4 bg-outline-variant/30"></span><a :href="imageUrl(selected.image_key)" target="_blank" rel="noopener" class="hover:text-primary flex items-center gap-1 text-xs font-bold uppercase"><span class="material-symbols-outlined text-lg">open_in_new</span> 新窗口</a></div></div>
-          <button class="absolute top-4 left-4 p-2 bg-surface-container-highest/80 rounded-full" aria-label="关闭详情" @click="closeModal"><span class="material-symbols-outlined">close</span></button>
+          <div class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div class="bg-glass px-3 py-1.5 rounded-lg flex gap-3 items-center shadow-lg">
+              <button class="hover:text-primary flex items-center gap-1 text-xs font-bold" @click="download"><span class="material-symbols-outlined text-base">download</span> 下载</button>
+              <span class="w-px h-4 bg-outline-variant/40"></span>
+              <a :href="imageUrl(selected.image_key)" target="_blank" rel="noopener" class="hover:text-primary flex items-center gap-1 text-xs font-bold"><span class="material-symbols-outlined text-base">open_in_new</span> 新窗口</a>
+            </div>
+          </div>
+          <button class="absolute top-3 left-3 p-1.5 bg-surface-container-highest/80 rounded-lg" aria-label="关闭详情" @click="closeModal"><span class="material-symbols-outlined text-lg">close</span></button>
         </div>
-        <div class="flex-1 lg:w-96 bg-white flex flex-col overflow-hidden min-h-0"><div class="flex-1 overflow-y-auto p-3 lg:p-6 space-y-4 lg:space-y-6">
-          <div><span class="text-xs font-bold text-outline uppercase tracking-widest">文件信息</span><h2 class="text-lg lg:text-xl font-extrabold mt-1 break-all">{{ selected.original_name || selected.image_key }}</h2><div class="mt-2 lg:mt-3 flex gap-2"><textarea v-model="description" rows="2" placeholder="添加描述..." class="flex-1 bg-surface-container-highest border-none rounded-lg px-3 py-2 text-sm resize-none"></textarea><button :disabled="actionBusy" class="self-end px-3 py-2 bg-primary/10 text-primary rounded-lg text-xs font-bold disabled:opacity-50" @click="saveDescription">保存</button></div></div>
-          <div class="space-y-3"><h3 class="text-sm font-bold">集成链接</h3><div><label class="text-xs font-semibold text-outline">直链</label><div class="flex gap-2 mt-1"><input :value="imageUrl(selected.image_key)" readonly class="min-w-0 flex-1 bg-surface-container-highest rounded-lg px-3 py-2 text-xs font-mono truncate" /><button class="primary-gradient text-white px-3 py-2 rounded-lg" title="复制直链" @click="copy(imageUrl(selected.image_key))"><span class="material-symbols-outlined text-sm">content_copy</span></button></div></div><div class="grid grid-cols-2 gap-3"><button class="bg-surface-container-high px-3 py-2 rounded-lg text-xs font-bold" @click="copyEmbed('markdown')">复制 Markdown</button><button class="bg-surface-container-high px-3 py-2 rounded-lg text-xs font-bold" @click="copyEmbed('html')">复制 HTML</button></div></div>
-          <div class="space-y-3"><h3 class="text-sm font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">info</span> 技术参数</h3><div v-for="row in [{ label: '文件大小', value: selected.file_size ? `${(selected.file_size / 1024).toFixed(2)} KB` : '-' }, { label: '格式', value: selected.mime_type || '-' }, { label: '上传者', value: selected.uploader || '-' }, { label: '上传时间', value: selected.uploaded_at ? new Date(selected.uploaded_at).toLocaleString('zh-CN') : '-' }, { label: '存储路径', value: selected.mount_key || '-' }]" :key="row.label" class="flex justify-between items-center gap-3 py-2 border-b border-outline-variant/10"><span class="text-sm text-outline shrink-0">{{ row.label }}</span><span class="text-xs text-right break-all">{{ row.value }}</span></div></div>
-          <div class="space-y-3"><h3 class="text-sm font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">backup</span> 备份状态</h3><p v-if="backupLoading" class="text-xs text-on-surface-variant">加载中...</p><p v-else-if="!backups.length" class="text-xs text-on-surface-variant">暂无备份记录</p><div v-for="backup in backups" :key="backup.mount_key" class="flex items-center justify-between py-2 px-3 bg-surface-container-low rounded-lg"><div><p class="text-xs font-bold">{{ backup.mount_name || backup.mount_key }}</p><p class="text-[10px] text-on-surface-variant">{{ backup.provider_name }}</p></div><span class="text-[10px] px-2 py-0.5 rounded" :class="Number(backup.status) === 2 ? 'bg-green-100 text-green-700' : Number(backup.status) === 3 ? 'bg-error/20 text-error' : 'bg-surface-container-high text-on-surface-variant'">{{ Number(backup.status) === 2 ? '已备份' : Number(backup.status) === 3 ? '备份失败' : Number(backup.status) === 1 ? '备份中' : '待备份' }}</span></div><button :disabled="actionBusy" class="w-full py-2 bg-primary/10 text-primary rounded-lg text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-50" @click="manualBackup"><span class="material-symbols-outlined text-sm">sync</span> 手动备份</button></div>
-          <div class="bg-error-container/10 border-l-4 border-error rounded-r-lg p-3 lg:p-4 space-y-2"><p class="text-xs font-bold text-error uppercase tracking-widest">危险操作</p><p class="text-xs text-on-surface-variant">删除后无法恢复，所有外部链接将失效</p><button class="w-full py-2 bg-error text-white rounded-lg text-sm font-bold" @click="remove(selected)">删除图片</button></div>
-        </div></div>
+        <div class="flex-1 lg:w-96 bg-surface-container-lowest flex flex-col overflow-hidden min-h-0">
+          <div class="flex-1 overflow-y-auto p-4 lg:p-5 space-y-5">
+            <div>
+              <h3 class="text-base font-bold break-all">{{ selected.original_name || selected.image_key }}</h3>
+              <div class="mt-2 flex gap-2">
+                <textarea v-model="description" rows="2" placeholder="添加描述..." class="flex-1 bg-surface-container-highest border-none rounded-lg px-3 py-2 text-sm resize-none"></textarea>
+                <button :disabled="actionBusy" class="self-end px-3 py-2 bg-primary/10 text-primary rounded-lg text-xs font-bold disabled:opacity-50" @click="saveDescription">保存</button>
+              </div>
+            </div>
+            <div class="space-y-2.5">
+              <h4 class="text-sm font-bold">集成链接</h4>
+              <div>
+                <label class="text-xs font-semibold text-outline">直链</label>
+                <div class="flex gap-2 mt-1">
+                  <input :value="imageUrl(selected.image_key)" readonly class="min-w-0 flex-1 bg-surface-container-highest rounded-lg px-3 py-2 text-xs font-mono truncate" />
+                  <button class="primary-gradient text-white px-2.5 rounded-lg" title="复制直链" @click="copy(imageUrl(selected.image_key))"><span class="material-symbols-outlined text-sm">content_copy</span></button>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <button class="bg-surface-container-high hover:bg-surface-container-highest px-3 py-2 rounded-lg text-xs font-bold" @click="copyEmbed('markdown')">复制 Markdown</button>
+                <button class="bg-surface-container-high hover:bg-surface-container-highest px-3 py-2 rounded-lg text-xs font-bold" @click="copyEmbed('html')">复制 HTML</button>
+              </div>
+            </div>
+            <div class="space-y-1">
+              <h4 class="text-sm font-bold">技术参数</h4>
+              <div v-for="row in [{ label: '文件大小', value: selected.file_size ? `${(selected.file_size / 1024).toFixed(2)} KB` : '-' }, { label: '格式', value: selected.mime_type || '-' }, { label: '上传者', value: selected.uploader || '-' }, { label: '上传时间', value: selected.uploaded_at ? new Date(selected.uploaded_at).toLocaleString('zh-CN') : '-' }, { label: '存储路径', value: selected.mount_key || '-' }]" :key="row.label" class="flex justify-between items-center gap-3 py-1.5">
+                <span class="text-xs text-outline shrink-0">{{ row.label }}</span>
+                <span class="text-xs text-right break-all">{{ row.value }}</span>
+              </div>
+            </div>
+            <div class="space-y-2">
+              <h4 class="text-sm font-bold">备份状态</h4>
+              <p v-if="backupLoading" class="text-xs text-on-surface-variant">加载中...</p>
+              <p v-else-if="!backups.length" class="text-xs text-on-surface-variant">暂无备份记录</p>
+              <div v-for="backup in backups" :key="backup.mount_key" class="flex items-center justify-between py-2 px-3 bg-surface-container-low rounded-lg">
+                <div>
+                  <p class="text-xs font-bold">{{ backup.mount_name || backup.mount_key }}</p>
+                  <p class="text-[10px] text-on-surface-variant">{{ backup.provider_name }}</p>
+                </div>
+                <span class="text-[10px] px-1.5 py-0.5 rounded" :class="Number(backup.status) === 2 ? 'bg-green-100 text-green-700' : Number(backup.status) === 3 ? 'bg-error/20 text-error' : 'bg-surface-container-high text-on-surface-variant'">{{ Number(backup.status) === 2 ? '已备份' : Number(backup.status) === 3 ? '备份失败' : Number(backup.status) === 1 ? '备份中' : '待备份' }}</span>
+              </div>
+              <button :disabled="actionBusy" class="w-full py-2 bg-primary/10 text-primary rounded-lg text-sm font-bold flex items-center justify-center gap-1.5 disabled:opacity-50" @click="manualBackup"><span class="material-symbols-outlined text-sm">sync</span> 手动备份</button>
+            </div>
+            <div class="bg-error-container/20 rounded-lg p-3 space-y-2">
+              <p class="text-xs text-on-surface-variant">删除后无法恢复，所有外部链接将失效</p>
+              <button class="w-full py-2 bg-error text-white rounded-lg text-sm font-bold" @click="remove(selected)">删除图片</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
