@@ -10,6 +10,7 @@ const { createUploadRouter } = require('./routes/upload');
 const { createImageRouter } = require('./routes/images');
 const { createProviderRouter } = require('./routes/providers');
 const { createUserRouter } = require('./routes/users');
+const { createTokenRouter } = require('./routes/tokens');
 
 const CONFIG = {
     port: process.env.PORT || 4000,
@@ -43,7 +44,7 @@ let db;
     db = await mysql.createPool(CONFIG.db);
     console.log('数据库连接成功');
 
-    const auth = authMiddleware(CONFIG);
+    const auth = authMiddleware(CONFIG, db);
 
     app.use(cors({ origin: '*' }));
     app.use(express.json());
@@ -53,6 +54,7 @@ let db;
     app.use('/api', createUploadRouter(db, CONFIG, auth));
     app.use('/api', createProviderRouter(db, auth));
     app.use('/api', createUserRouter(db, auth));
+    app.use('/api', createTokenRouter(db, auth));
 
     app.listen(CONFIG.port, '127.0.0.1', () => {
         console.log(`图床服务已启动: http://127.0.0.1:${CONFIG.port}`);
