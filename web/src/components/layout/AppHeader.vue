@@ -17,11 +17,27 @@ const emit = defineEmits(['toggle-sidebar', 'update:search', 'search', 'logout']
 
 const menuOpen = ref(false)
 const root = ref(null)
+const isMobile = ref(false)
+const mobileQuery = typeof window === 'undefined' ? null : window.matchMedia('(max-width: 1023px)')
 const roleLabels = { admin: '管理员', user: '普通用户' }
 
 const displayName = computed(() => props.user.username || '未登录')
 const roleLabel = computed(() => roleLabels[props.user.role] || props.user.role || '普通用户')
 const initial = computed(() => displayName.value.charAt(0).toUpperCase())
+
+// Below `lg` the sidebar is an off-canvas drawer, so the control opens it.
+const toggleLabel = computed(() => {
+  if (isMobile.value) return '打开菜单'
+  return props.collapsed ? '展开侧边栏' : '收起侧边栏'
+})
+const toggleIcon = computed(() => {
+  if (isMobile.value) return 'menu'
+  return props.collapsed ? 'menu' : 'left_panel_close'
+})
+
+function syncIsMobile() {
+  isMobile.value = Boolean(mobileQuery?.matches)
+}
 
 function onDocumentPointer(event) {
   if (menuOpen.value && root.value && !root.value.contains(event.target)) menuOpen.value = false
@@ -36,11 +52,14 @@ function submitSearch() {
 }
 
 onMounted(() => {
+  syncIsMobile()
+  mobileQuery?.addEventListener('change', syncIsMobile)
   document.addEventListener('pointerdown', onDocumentPointer)
   document.addEventListener('keydown', onKeydown)
 })
 
 onBeforeUnmount(() => {
+  mobileQuery?.removeEventListener('change', syncIsMobile)
   document.removeEventListener('pointerdown', onDocumentPointer)
   document.removeEventListener('keydown', onKeydown)
 })
@@ -52,11 +71,11 @@ onBeforeUnmount(() => {
       <button
         type="button"
         class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors"
-        :title="collapsed ? '展开侧边栏' : '收起侧边栏'"
-        :aria-label="collapsed ? '展开侧边栏' : '收起侧边栏'"
+        :title="toggleLabel"
+        :aria-label="toggleLabel"
         @click="emit('toggle-sidebar')"
       >
-        <span class="material-symbols-outlined text-xl">{{ collapsed ? 'menu' : 'left_panel_close' }}</span>
+        <span class="material-symbols-outlined text-xl">{{ toggleIcon }}</span>
       </button>
 
       <form class="relative flex-1 max-w-xl hidden sm:block" role="search" @submit.prevent="submitSearch">
