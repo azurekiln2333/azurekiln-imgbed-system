@@ -9,6 +9,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 const props = defineProps({
   collapsed: { type: Boolean, default: false },
+  mobileOpen: { type: Boolean, default: false },
   user: { type: Object, default: () => ({}) },
   search: { type: String, default: '' }
 })
@@ -25,9 +26,10 @@ const displayName = computed(() => props.user.username || '未登录')
 const roleLabel = computed(() => roleLabels[props.user.role] || props.user.role || '普通用户')
 const initial = computed(() => displayName.value.charAt(0).toUpperCase())
 
-// Below `lg` the sidebar is an off-canvas drawer, so the control opens it.
+// Below `lg` the sidebar is an off-canvas drawer, so the same control opens
+// and closes it; the label always names the action it will perform.
 const toggleLabel = computed(() => {
-  if (isMobile.value) return '打开菜单'
+  if (isMobile.value) return props.mobileOpen ? '收起侧边栏' : '展开侧边栏'
   return props.collapsed ? '展开侧边栏' : '收起侧边栏'
 })
 const toggleIcon = computed(() => {
