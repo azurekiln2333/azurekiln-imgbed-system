@@ -64,7 +64,8 @@ test('upload, gallery details, settings, and mobile layout', async ({ page }, te
   await page.getByRole('button', { name: '设置', exact: true }).click()
   await expect(page.getByText('AList', { exact: true }).first()).toBeVisible()
   await page.getByRole('tab', { name: '挂载点' }).click()
-  await expect(page.getByRole('button', { name: /主存储 公共/ })).toBeVisible()
+  // The mount list renders one card per mount: name, public badge, provider path.
+  await expect(page.getByRole('button', { name: /主存储.*公共/ })).toBeVisible()
   await page.screenshot({ path: testInfo.outputPath('settings-desktop.png'), fullPage: true })
   await page.setViewportSize({ width: 390, height: 844 })
   await expect.poll(() => page.locator('aside').evaluate(element => Math.round(element.getBoundingClientRect().right))).toBeLessThanOrEqual(0)
