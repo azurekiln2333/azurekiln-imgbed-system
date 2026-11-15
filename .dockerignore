@@ -1,0 +1,13 @@
+# Dotfiles carry secrets and local tool state; none of them belong in the
+# image. The remaining entries keep caches, build output and uploads out of
+# the build context — web/dist is rebuilt inside the image.
+**/.*
+**/node_modules
+**/dist
+**/test-results
+**/playwright-report
+**/uploads
+server/test
+web/tests
+web/playwright.config.js
+logs

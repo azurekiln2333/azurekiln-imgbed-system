@@ -1,0 +1,45 @@
+services:
+  imgbed:
+    image: "${IMGBED_IMAGE:-ghcr.io/azurekiln2333/azurekiln-imgbed-system:latest}"
+    restart: unless-stopped
+    init: true
+    env_file:
+      - .env
+    environment:
+      # Keep container settings independent of an existing plain Node .env.
+      PORT: "4000"
+    # Bridge network plus host-gateway: the container reaches host MySQL and
+    # AList through host.docker.internal without host networking.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "${IMGBED_BIND_HOST:-127.0.0.1}:${IMGBED_PORT:-8080}:80"
+    volumes:
+      - ./uploads:/app/server/uploads
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
+      com.centurylinklabs.watchtower.scope: "${COMPOSE_PROJECT_NAME:-azurekiln-imgbed}"
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  watchtower:
+    image: nickfedor/watchtower:1.23.2
+    restart: unless-stopped
+    environment:
+      WATCHTOWER_LABEL_ENABLE: "true"
+      WATCHTOWER_SCOPE: "${COMPOSE_PROJECT_NAME:-azurekiln-imgbed}"
+      WATCHTOWER_POLL_INTERVAL: "${WATCHTOWER_POLL_INTERVAL:-600}"
+      WATCHTOWER_CLEANUP: "true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      com.centurylinklabs.watchtower.enable: "false"
+      com.centurylinklabs.watchtower.scope: "${COMPOSE_PROJECT_NAME:-azurekiln-imgbed}"
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
