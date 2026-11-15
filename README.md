@@ -1,5 +1,7 @@
 # Azurekiln ImgBed System
 
+[![Build and release](https://github.com/azurekiln2333/azurekiln-imgbed-system/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/azurekiln2333/azurekiln-imgbed-system/actions/workflows/build-and-release.yml)
+
 数字馆长图床系统。`web/` 是 Vue 3 + Vite 前端，`server/` 是 Node.js + Express API。前端构建产物是静态文件，运行时不需要 PHP。
 
 ## 本地开发
