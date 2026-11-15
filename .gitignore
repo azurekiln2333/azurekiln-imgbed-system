@@ -18,7 +18,8 @@ server/uploads/
 .devin/
 .dsh/
 .gemini/
-.github/
+.github/*
+!.github/workflows/
 .kiro/
 .omp/
 .opencode/
